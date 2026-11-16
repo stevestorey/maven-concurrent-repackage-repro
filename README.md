@@ -65,7 +65,8 @@ this.project.artifactFilter = CumulativeScopeArtifactFilter
 | `-b concurrent -T1C -Djacoco.skip` | BROKEN (resolution happens before the mojo skips) |
 | `-b concurrent -T1` | OK |
 | default builder `-T1C` (Maven 4 and 3) | OK |
-| `report-after-tests` bound to `verify` instead of `after:test` | OK |
+| `report-after-tests` bound to `verify` instead of `after:test` | OK, but the concurrent plan runs `verify`-bound mojos right after `initialize`, before the tests |
+| `report-after-tests` bound to `after:verify` (whose predecessors include both `test` and `package`) | OK |
 
 This is related to, but not the same as, apache/maven#7730 (MNG-5960). That issue is about an
 aggregator mojo re-resolving the dependencies of *other* projects. Here no aggregator is
