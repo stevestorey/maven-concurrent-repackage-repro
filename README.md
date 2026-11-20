@@ -3,19 +3,22 @@
 With `-b concurrent` and more than one thread, a Maven 3 API mojo in the `package` phase can
 see an empty `MavenProject.getArtifacts()`. The build still reports BUILD SUCCESS. Here the
 mojo is `spring-boot:repackage`, which then builds a WAR with no `WEB-INF/lib-provided/`
-entries. The WAR fails at runtime with `NoClassDefFoundError` for any `provided` class.
+entries. The application then fails as soon as it loads a `provided` class: here `App` throws
+`ClassNotFoundException: jakarta.servlet.Filter`.
 
 ## Reproduce
 
 ```sh
+git clone https://github.com/stevestorey/maven-concurrent-repackage-repro.git
+cd maven-concurrent-repackage-repro
 MVN=/path/to/maven-4/bin/mvn ./check.sh -b concurrent -T1C   # RESULT: BROKEN
 MVN=/path/to/maven-4/bin/mvn ./check.sh -b concurrent -T1    # RESULT: OK
 MVN=/path/to/maven-4/bin/mvn ./check.sh -T1C                 # RESULT: OK (default builder)
 MVN=/path/to/maven-3/bin/mvn ./check.sh -T1C                 # RESULT: OK
 ```
 
-Tested with Maven 4.0.0-SNAPSHOT (a74018b) and 4.2.0-SNAPSHOT (master), Java 25. The order of
-the `app` mojos in a broken run is:
+Tested with Maven 4.0.0-SNAPSHOT (4.0.x, 780ac40), Java 25. The order of the `app` mojos in a
+broken run is:
 
 ```
 war:war (default-war)              <- package step: resolves compile+runtime for the step
